@@ -87,11 +87,6 @@
 
     <!-- サブスク -->
     <section id="view-subs" class="view">
-      <div class="card summary-card">
-        <div class="sum-row"><span>月あたり合計</span><span id="subs-monthly" class="num expense">¥0</span></div>
-        <div class="sum-row total"><span>年間合計</span><span id="subs-yearly" class="num expense">¥0</span></div>
-      </div>
-
       <form id="subs-form" class="card">
         <div class="row">
           <label>サービス名</label>
@@ -118,6 +113,10 @@
         </div>
         <button type="submit" class="primary">サブスクを追加</button>
       </form>
+
+      <div class="card summary-card">
+        <div class="sum-row total"><span>月あたり合計</span><span id="subs-monthly" class="num expense">¥0</span></div>
+      </div>
 
       <h3 class="subhead">登録中のサブスク</h3>
       <div id="subs-list"></div>

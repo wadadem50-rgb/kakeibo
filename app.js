@@ -254,7 +254,6 @@ async function renderSubs() {
   let monthly = 0;
   subs.forEach((s) => { monthly += s.cycle === 'yearly' ? s.amount / 12 : s.amount; });
   $('#subs-monthly').textContent = yen(monthly);
-  $('#subs-yearly').textContent = yen(monthly * 12);
 
   // 月額換算が大きい順
   subs.sort((a, b) => (b.cycle === 'yearly' ? b.amount / 12 : b.amount) - (a.cycle === 'yearly' ? a.amount / 12 : a.amount));
