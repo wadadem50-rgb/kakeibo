@@ -84,12 +84,51 @@
       <h3 class="subhead">カテゴリ別（支出）</h3>
       <div id="sum-breakdown"></div>
     </section>
+
+    <!-- サブスク -->
+    <section id="view-subs" class="view">
+      <div class="card summary-card">
+        <div class="sum-row"><span>月あたり合計</span><span id="subs-monthly" class="num expense">¥0</span></div>
+        <div class="sum-row total"><span>年間合計</span><span id="subs-yearly" class="num expense">¥0</span></div>
+      </div>
+
+      <form id="subs-form" class="card">
+        <div class="row">
+          <label>サービス名</label>
+          <input type="text" id="s-name" placeholder="例：Netflix" required />
+        </div>
+        <div class="row">
+          <label>請求サイクル</label>
+          <div class="seg" id="s-cycle">
+            <button type="button" class="seg-btn active" data-cycle="monthly">月額</button>
+            <button type="button" class="seg-btn" data-cycle="yearly">年額</button>
+          </div>
+        </div>
+        <div class="row">
+          <label>金額</label>
+          <input type="number" id="s-amount" inputmode="numeric" min="0" step="1" placeholder="0" required />
+        </div>
+        <div class="row">
+          <label>請求日（任意）</label>
+          <input type="number" id="s-day" inputmode="numeric" min="1" max="31" placeholder="毎月の請求日（例：15）" />
+        </div>
+        <div class="row">
+          <label>メモ（任意）</label>
+          <input type="text" id="s-memo" placeholder="プラン名など" />
+        </div>
+        <button type="submit" class="primary">サブスクを追加</button>
+      </form>
+
+      <h3 class="subhead">登録中のサブスク</h3>
+      <div id="subs-list"></div>
+    </section>
   </main>
 
   <nav class="tabbar">
     <button class="tab active" data-view="input">入力</button>
     <button class="tab" data-view="list">一覧</button>
     <button class="tab" data-view="summary">サマリー</button>
+    <button class="tab" data-view="subs">サブスク</button>
   </nav>
 
   <div id="toast" class="toast"></div>

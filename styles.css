@@ -146,6 +146,7 @@ button.primary:active { opacity: .85; }
 .item .amount { font-size: 17px; font-weight: 600; white-space: nowrap; }
 .item .amount.income { color: var(--income); }
 .item .amount.expense { color: var(--expense); }
+.item .amount .cyc { font-size: 12px; font-weight: 400; color: var(--muted); }
 .item .del {
   border: none;
   background: transparent;

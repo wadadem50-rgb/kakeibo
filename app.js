@@ -8,7 +8,7 @@ const DEFAULT_CATEGORIES = {
 
 /* ===== IndexedDB ===== */
 const DB_NAME = 'kakeibo';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let db;
 
 function openDB() {
@@ -22,6 +22,9 @@ function openDB() {
       }
       if (!d.objectStoreNames.contains('categories')) {
         d.createObjectStore('categories', { keyPath: 'name' });
+      }
+      if (!d.objectStoreNames.contains('subscriptions')) {
+        d.createObjectStore('subscriptions', { keyPath: 'id', autoIncrement: true });
       }
     };
     req.onsuccess = (e) => { db = e.target.result; resolve(db); };
@@ -46,9 +49,13 @@ async function addCustomCategory(name, type) {
   return reqPromise(tx('categories', 'readwrite').put({ name, type }));
 }
 async function getCustomCategories() { return reqPromise(tx('categories', 'readonly').getAll()); }
+async function addSubscription(sub) { return reqPromise(tx('subscriptions', 'readwrite').add(sub)); }
+async function deleteSubscription(id) { return reqPromise(tx('subscriptions', 'readwrite').delete(id)); }
+async function getAllSubscriptions() { return reqPromise(tx('subscriptions', 'readonly').getAll()); }
 
 /* ===== 状態 ===== */
 let currentType = 'expense';
+let currentCycle = 'monthly'; // サブスク登録フォームの請求サイクル
 let listMonth = new Date();   // 一覧の表示月
 let sumMonth = new Date();    // サマリーの表示月
 
@@ -205,6 +212,79 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+/* ===== サブスク ===== */
+function initSubsForm() {
+  $('#s-cycle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    currentCycle = btn.dataset.cycle;
+    document.querySelectorAll('#s-cycle .seg-btn').forEach((b) =>
+      b.classList.toggle('active', b === btn));
+  });
+
+  $('#subs-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#s-name').value.trim();
+    const amount = Number($('#s-amount').value);
+    if (!name) { toast('サービス名を入力してください'); return; }
+    if (!amount || amount <= 0) { toast('金額を入力してください'); return; }
+    const day = Number($('#s-day').value);
+
+    await addSubscription({
+      name,
+      amount,
+      cycle: currentCycle,
+      billingDay: day >= 1 && day <= 31 ? day : null,
+      memo: $('#s-memo').value.trim(),
+      createdAt: Date.now(),
+    });
+
+    $('#s-name').value = '';
+    $('#s-amount').value = '';
+    $('#s-day').value = '';
+    $('#s-memo').value = '';
+    await renderSubs();
+    toast('追加しました');
+  });
+}
+
+async function renderSubs() {
+  const subs = await getAllSubscriptions();
+
+  let monthly = 0;
+  subs.forEach((s) => { monthly += s.cycle === 'yearly' ? s.amount / 12 : s.amount; });
+  $('#subs-monthly').textContent = yen(monthly);
+  $('#subs-yearly').textContent = yen(monthly * 12);
+
+  // 月額換算が大きい順
+  subs.sort((a, b) => (b.cycle === 'yearly' ? b.amount / 12 : b.amount) - (a.cycle === 'yearly' ? a.amount / 12 : a.amount));
+
+  const c = $('#subs-list');
+  if (subs.length === 0) { c.innerHTML = '<div class="empty">登録中のサブスクはありません</div>'; return; }
+
+  c.innerHTML = subs.map((s) => {
+    const cycleLabel = s.cycle === 'yearly' ? '年額' : '月額';
+    const sub = [cycleLabel, s.billingDay ? `毎月${s.billingDay}日` : '', s.memo]
+      .filter(Boolean).join(' ・ ');
+    return `
+      <div class="item">
+        <div class="grow">
+          <div class="cat">${escapeHtml(s.name)}</div>
+          <div class="memo">${escapeHtml(sub)}</div>
+        </div>
+        <div class="amount expense">${yen(s.amount)}<span class="cyc">/${cycleLabel === '年額' ? '年' : '月'}</span></div>
+        <button class="del" data-id="${s.id}" aria-label="削除">×</button>
+      </div>`;
+  }).join('');
+
+  c.querySelectorAll('.del').forEach((b) => b.addEventListener('click', async () => {
+    if (!confirm('このサブスクを削除しますか？')) return;
+    await deleteSubscription(Number(b.dataset.id));
+    await renderSubs();
+    toast('削除しました');
+  }));
+}
+
 /* ===== 月切替 ===== */
 function shiftMonth(d, delta) { return new Date(d.getFullYear(), d.getMonth() + delta, 1); }
 
@@ -215,6 +295,7 @@ function showView(name) {
   document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.view === name));
   if (name === 'list') renderList();
   if (name === 'summary') renderSummary();
+  if (name === 'subs') renderSubs();
 }
 
 /* ===== 起動 ===== */
@@ -222,6 +303,7 @@ async function main() {
   await openDB();
   await refreshCategorySelect();
   initForm();
+  initSubsForm();
 
   document.querySelectorAll('.tab').forEach((t) =>
     t.addEventListener('click', () => showView(t.dataset.view)));
