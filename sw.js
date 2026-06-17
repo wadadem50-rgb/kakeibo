@@ -1,5 +1,5 @@
 /* バージョンを上げるとキャッシュが更新されます */
-const CACHE = 'kakeibo-v2';
+const CACHE = 'kakeibo-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -23,15 +23,15 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+// ネットワーク優先：オンライン時は常に最新を取得し、取れたらキャッシュも更新。
+// オフライン時のみキャッシュから返す（更新が即反映されるようにするため）。
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then((cached) =>
-      cached || fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
-        return res;
-      }).catch(() => cached)
-    )
+    fetch(e.request).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
