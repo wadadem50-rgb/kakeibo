@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <title>家計簿</title>
+  <meta name="theme-color" content="#2f6d5b" />
+
+  <!-- iOS: ホーム画面追加で全画面起動 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="家計簿" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>家計簿</h1>
+  </header>
+
+  <main>
+    <!-- 入力画面 -->
+    <section id="view-input" class="view active">
+      <form id="entry-form" class="card">
+        <div class="row">
+          <label>日付</label>
+          <input type="date" id="f-date" required />
+        </div>
+
+        <div class="row">
+          <label>区分</label>
+          <div class="seg" id="f-type">
+            <button type="button" class="seg-btn active" data-type="expense">支出</button>
+            <button type="button" class="seg-btn" data-type="income">収入</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>金額</label>
+          <input type="number" id="f-amount" inputmode="numeric" min="0" step="1" placeholder="0" required />
+        </div>
+
+        <div class="row">
+          <label>カテゴリ</label>
+          <div class="cat-input">
+            <select id="f-category"></select>
+            <input type="text" id="f-category-new" placeholder="新しいカテゴリを直接入力" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label>メモ</label>
+          <input type="text" id="f-memo" placeholder="任意" />
+        </div>
+
+        <button type="submit" class="primary" id="f-submit">記録する</button>
+      </form>
+    </section>
+
+    <!-- 一覧画面 -->
+    <section id="view-list" class="view">
+      <div class="month-bar">
+        <button type="button" id="list-prev">‹</button>
+        <span id="list-month"></span>
+        <button type="button" id="list-next">›</button>
+      </div>
+      <div id="list-container"></div>
+    </section>
+
+    <!-- 当月サマリー -->
+    <section id="view-summary" class="view">
+      <div class="month-bar">
+        <button type="button" id="sum-prev">‹</button>
+        <span id="sum-month"></span>
+        <button type="button" id="sum-next">›</button>
+      </div>
+      <div class="card summary-card">
+        <div class="sum-row"><span>収入</span><span id="sum-income" class="num income">¥0</span></div>
+        <div class="sum-row"><span>支出</span><span id="sum-expense" class="num expense">¥0</span></div>
+        <div class="sum-row total"><span>残高</span><span id="sum-balance" class="num">¥0</span></div>
+      </div>
+      <h3 class="subhead">カテゴリ別（支出）</h3>
+      <div id="sum-breakdown"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-view="input">入力</button>
+    <button class="tab" data-view="list">一覧</button>
+    <button class="tab" data-view="summary">サマリー</button>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
